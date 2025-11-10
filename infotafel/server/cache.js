@@ -83,8 +83,32 @@ async function parseFoodHTML(html) {
 
       for (let j = 2; j <= 6; j++) {
         const meal = $(element).find(`.col${i}.row${j} p.gericht`).text().trim().replace(/\s\s+/g, " ");
-        const menuParts = meal.split("/");
-
+        const menuParts = meal.split(RegExp(/, |,|\//));
+        for(x = 0; x < menuParts.length; x++) {
+          str = menuParts[x]
+          if(str.includes("\n")) {
+            menuParts[x] = str.slice(1)
+            console.log(str)
+            str = menuParts[x]
+          }
+          if(str == "Käse und Ei") {
+            menuParts[0] = menuParts[0] + ', ' + menuParts[x]
+          } else {
+            if(str.length > 3) {
+              if(x != 0) {
+                menuParts[0] = menuParts[0] + ', ' + menuParts[x]
+                menuParts[1] = ''
+              }
+            } else {
+              str2 =menuParts[1]
+              if(str2.length == 0 || menuParts[1] == menuParts[x]) {
+                menuParts[1] = menuParts[x]
+              } else {
+                menuParts[1] = menuParts[1] + ',' + menuParts[x]
+              }
+            }
+          }
+        }
         if (menuParts.length > 1) {
           if (j === 2) {
             meals.soup.soupName.push(menuParts[0].trim());
@@ -103,7 +127,6 @@ async function parseFoodHTML(html) {
 
   return data;
 }
-
 
 app.get("/cache/food", async (req, res) => {
   try {

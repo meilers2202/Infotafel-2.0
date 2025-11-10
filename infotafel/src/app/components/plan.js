@@ -82,15 +82,15 @@ export default function Plan({ isActive = true }) {
           .split("T")[0];
 
         const todayResponse = await axios.get(
-          process.env.NEXT_PUBLIC_STRAPI_APP_API_URL + `api/stundenplaene?populate=*&filters[beruf][Name][$eq]=${fachrichtung}&filters[Datum][$eq]=${dateToday}`
+          process.env.NEXT_PUBLIC_STRAPI_APP_API_URL + `api/stundenplaene?populate=*&filters[beruf][$eq]=${fachrichtung}&filters[Datum][$eq]=${dateToday}`
         );
         const tomorrowResponse = await axios.get(
-          process.env.NEXT_PUBLIC_STRAPI_APP_API_URL + `api/stundenplaene?populate=*&filters[beruf][Name][$eq]=${fachrichtung}&filters[Datum][$eq]=${dateTomorrow}`
+          process.env.NEXT_PUBLIC_STRAPI_APP_API_URL + `api/stundenplaene?populate=*&filters[beruf][$eq]=${fachrichtung}&filters[Datum][$eq]=${dateTomorrow}`
         );
 
-        const todayData = todayResponse.data.data[0]?.Vertretungsplan || [];
+        const todayData = todayResponse.data.data || [];
         const tomorrowData =
-          tomorrowResponse.data.data[0]?.Vertretungsplan || [];
+          tomorrowResponse.data.data || [];
 
         if (todayData.length > 0) {
           todayData.sort((a, b) => a.Stunde - b.Stunde);
@@ -205,8 +205,26 @@ export default function Plan({ isActive = true }) {
                           wordWrap: "break-word",
                         }}
                       >
-                        {plan.find((item) => item.Stunde === index + 1)?.Text || "-"}
+                        {plan.find((item) => item.Stunde === index + 1)?.Unterricht || "-"}
                       </td>
+                      
+                    ))}
+                  </tr>
+                  <tr role="row">
+                    {Array.from({ length: 10 }).map((_, index) => (
+                      <td
+                        key={index}
+                        className="p-3 border border-gray-300"
+                        tabIndex={tabIndexValue}
+                        role="cell"
+                        style={{
+                          whiteSpace: "normal",
+                          wordWrap: "break-word",
+                        }}
+                      >
+                        {plan.find((item) => item.Stunde === index + 1)?.Lehrer || "-"}
+                      </td>
+                      
                     ))}
                   </tr>
                 </tbody>

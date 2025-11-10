@@ -1,0 +1,19 @@
+{
+  "kind": "collectionType",
+  "collectionName": "berufe",
+  "info": {
+    "singularName": "beruf",
+    "pluralName": "berufe",
+    "displayName": "berufe"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Name": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

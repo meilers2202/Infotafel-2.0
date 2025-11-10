@@ -82,8 +82,7 @@ export default function Home() {
           const randomBg = backgrounds[randomIndex];
 
           // Set the random background to state
-          console.log(randomBg.Hintergrund[0].url)
-          setBackgroundImage("http://localhost:1337"+randomBg.Hintergrund[0].url)
+          setBackgroundImage("http://localhost:1337"+randomBg.Hintergrund.url)
         }
       } catch (e) {
         console.log(e);

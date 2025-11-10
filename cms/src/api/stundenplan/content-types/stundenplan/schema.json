@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "stundenplaene",
+  "info": {
+    "singularName": "stundenplan",
+    "pluralName": "stundenplaene",
+    "displayName": "Stundenplaene"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Unterricht": {
+      "type": "string",
+      "required": true
+    },
+    "Lehrer": {
+      "type": "string",
+      "required": true
+    },
+    "Datum": {
+      "type": "date",
+      "required": true
+    },
+    "beruf": {
+      "type": "string",
+      "required": true
+    },
+    "Stunde": {
+      "type": "integer",
+      "required": true
+    }
+  }
+}

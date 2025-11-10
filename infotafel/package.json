@@ -9,7 +9,7 @@
     "start": "concurrently \"next start\" \"npm run start-node\"",
     "lint": "next lint",
     "start-node": "node ./server/cache.js",
-    "start-strapi": "cd ../infotafel-cms && npm run develop"
+    "start-strapi": "cd ../cms && npm run dev"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",

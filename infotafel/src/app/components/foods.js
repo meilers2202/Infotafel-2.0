@@ -28,7 +28,7 @@ function Foods({ isActive }) {
 
     fetchData();
   }, []);
-
+  console.log(mealPlan)
   // Accessibility settings
   const tabIndexValue = isActive ? 0 : -1; // Only focusable when active
   const ariaHiddenValue = !isActive; // Hidden from screen readers when inactive
@@ -111,6 +111,10 @@ function Foods({ isActive }) {
               <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl text-white">
                 {day.date}
               </h1>
+              <br/>
+              <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-white">
+                Gericht
+              </h2>
               <div className="font-medium text-base sm:text-lg mt-4 text-gray-300">
                 {day.meals &&
                 day.meals.menus &&
@@ -134,6 +138,54 @@ function Foods({ isActive }) {
                           tabIndex={tabIndexValue}
                         >
                           Allergene: {day.meals.menus.alergenes[mealIndex]}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400">No meals available</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && mealPlan && mealPlan.length > 0 && (
+        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 ml-6 mr-6">
+          {mealPlan.map((day) => (
+            <div
+              className="font-bold p-6 shadow-sm rounded-lg transition-transform transform hover:scale-105 duration-200 hover:shadow-lg"
+              key={day.date}
+              tabIndex={tabIndexValue}
+              aria-hidden={ariaHiddenValue}
+            >
+              <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-white">
+                Suppe
+              </h2>
+              <div className="font-medium text-base sm:text-lg mt-4 text-gray-300">
+                {day.meals &&
+                day.meals.soup &&
+                Array.isArray(day.meals.soup.soupName) &&
+                day.meals.soup.soupName.length > 0 ? (
+                  day.meals.soup.soupName.map((meal, mealIndex) => (
+                    <div
+                      className="p-4 mt-2 rounded-md bg-gray-700 h-36 flex flex-col justify-between"
+                      key={mealIndex}
+                      aria-hidden={ariaHiddenValue}
+                    >
+                      <p
+                        className="text-sm sm:text-base md:text-lg text-gray-200"
+                        tabIndex={tabIndexValue}
+                      >
+                        {meal}
+                      </p>
+                      {day.meals.soup.alergens[mealIndex] && (
+                        <p
+                          className="text-xs sm:text-sm mt-2 text-gray-400"
+                          tabIndex={tabIndexValue}
+                        >
+                          Allergene: {day.meals.soup.alergens[mealIndex]}
                         </p>
                       )}
                     </div>
