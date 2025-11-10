@@ -28,7 +28,6 @@ function Foods({ isActive }) {
 
     fetchData();
   }, []);
-  console.log(mealPlan)
   // Accessibility settings
   const tabIndexValue = isActive ? 0 : -1; // Only focusable when active
   const ariaHiddenValue = !isActive; // Hidden from screen readers when inactive
