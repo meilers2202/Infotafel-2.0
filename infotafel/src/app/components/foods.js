@@ -73,6 +73,8 @@ function Foods({ isActive }) {
                 className="m-4 p-4 bg-gray-800 rounded-lg text-white"
               >
                 <h1 className="text-2xl font-bold">{day.date}</h1>
+                <br/>
+                <h2 className="text-2xl font-bold">Gerichte</h2>
                 <div className="grid grid-cols-1 gap-4 mt-4">
                   {day.meals?.menus?.menuName?.length > 0 ? (
                     day.meals.menus.menuName.map((meal, mealIndex) => (
@@ -84,6 +86,35 @@ function Foods({ isActive }) {
                         {day.meals.menus.alergenes[mealIndex] && (
                           <p className="text-sm text-gray-400 mt-2">
                             Allergene: {day.meals.menus.alergenes[mealIndex]}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400">Keine Mahlzeiten verfügbar</p>
+                  )}
+                </div>
+              </div>
+            ))}
+            {mealPlan
+            .filter((day) => day.date === selectedDay)
+            .map((day) => (
+              <div
+                key={day.date}
+                className="m-4 p-4 bg-gray-800 rounded-lg text-white"
+              >
+                <h2 className="text-2xl font-bold">Suppe</h2>
+                <div className="grid grid-cols-1 gap-4 mt-4">
+                  {day.meals?.soup?.soupName?.length > 0 ? (
+                    day.meals.soup.soupName.map((meal, mealIndex) => (
+                      <div
+                        key={mealIndex}
+                        className="p-4 rounded-md bg-gray-700"
+                      >
+                        <p>{meal}</p>
+                        {day.meals.soup.alergens[mealIndex] && (
+                          <p className="text-sm text-gray-400 mt-2">
+                            Allergene: {day.meals.soup.alergens[mealIndex]}
                           </p>
                         )}
                       </div>
@@ -112,7 +143,7 @@ function Foods({ isActive }) {
               </h1>
               <br/>
               <h2 className="font-semibold text-xl sm:text-2xl md:text-3xl text-white">
-                Gericht
+                Gerichte
               </h2>
               <div className="font-medium text-base sm:text-lg mt-4 text-gray-300">
                 {day.meals &&
@@ -121,7 +152,7 @@ function Foods({ isActive }) {
                 day.meals.menus.menuName.length > 0 ? (
                   day.meals.menus.menuName.map((meal, mealIndex) => (
                     <div
-                      className="p-4 mt-2 rounded-md bg-gray-700 h-36 flex flex-col justify-between"
+                      className="p-4 mt-2 rounded-md bg-gray-700 flex flex-col justify-between"
                       key={mealIndex}
                       aria-hidden={ariaHiddenValue}
                     >

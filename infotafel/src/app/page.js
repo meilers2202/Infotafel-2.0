@@ -93,13 +93,13 @@ export default function Home() {
   }, []);
 
   const slides = [
+    <LocInfo key="locinfo" isActive={activeIndex === 5} />,
     <Weather key="weather" isActive={activeIndex === 0} />,
     <Foods key="foods" isActive={activeIndex === 1} />,
     <Plan key="plan" isActive={activeIndex === 2} />,
     <Fahrplan key="fahrplan" isActive={activeIndex === 3} />,
-    //<Events key="events" isActive={activeIndex === 4} />,
-    //<LocInfo key="locinfo" isActive={activeIndex === 5} />,
-    //<GenInfo key="geninfo" isActive={activeIndex === 6} />,
+    <Events key="events" isActive={activeIndex === 4} />,
+    <GenInfo key="geninfo" isActive={activeIndex === 6} />,
   ];
 
   return (

@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "standorte",
+  "info": {
+    "singularName": "standort",
+    "pluralName": "standorte",
+    "displayName": "Standort"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Art": {
+      "type": "string",
+      "required": true
+    },
+    "Standort": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

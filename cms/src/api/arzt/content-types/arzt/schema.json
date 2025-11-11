@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "aerzte",
+  "info": {
+    "singularName": "arzt",
+    "pluralName": "aerzte",
+    "displayName": "Arzt"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Titel": {
+      "type": "string",
+      "required": true
+    },
+    "Name": {
+      "type": "string",
+      "required": true
+    },
+    "Telefon": {
+      "type": "biginteger",
+      "required": true
+    },
+    "Standort": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

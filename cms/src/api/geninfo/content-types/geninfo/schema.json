@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "geninfos",
+  "info": {
+    "singularName": "geninfo",
+    "pluralName": "geninfos",
+    "displayName": "geninfos"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Personal": {
+      "type": "string",
+      "required": true
+    },
+    "Email": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -430,6 +430,34 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiArztArzt extends Struct.CollectionTypeSchema {
+  collectionName: 'aerzte';
+  info: {
+    displayName: 'Arzt';
+    pluralName: 'aerzte';
+    singularName: 'arzt';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::arzt.arzt'> &
+      Schema.Attribute.Private;
+    Name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    Standort: Schema.Attribute.String & Schema.Attribute.Required;
+    Telefon: Schema.Attribute.BigInteger & Schema.Attribute.Required;
+    Titel: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiBackgroundBackground extends Struct.CollectionTypeSchema {
   collectionName: 'backgrounds';
   info: {
@@ -480,6 +508,122 @@ export interface ApiBerufBeruf extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     Name: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiBetreuenBetreuen extends Struct.CollectionTypeSchema {
+  collectionName: 'betreuer';
+  info: {
+    displayName: 'betreuer';
+    pluralName: 'betreuer';
+    singularName: 'betreuen';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Betreuer: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::betreuen.betreuen'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    Standort: Schema.Attribute.String & Schema.Attribute.Required;
+    Telefon: Schema.Attribute.BigInteger & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiEventEvent extends Struct.CollectionTypeSchema {
+  collectionName: 'events';
+  info: {
+    displayName: 'Event';
+    pluralName: 'events';
+    singularName: 'event';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    bild: Schema.Attribute.Media<'images' | 'files'> &
+      Schema.Attribute.Required;
+    Content: Schema.Attribute.Text & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::event.event'> &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    Title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiGeninfoGeninfo extends Struct.CollectionTypeSchema {
+  collectionName: 'geninfos';
+  info: {
+    displayName: 'geninfos';
+    pluralName: 'geninfos';
+    singularName: 'geninfo';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Email: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::geninfo.geninfo'
+    > &
+      Schema.Attribute.Private;
+    Personal: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiStandortStandort extends Struct.CollectionTypeSchema {
+  collectionName: 'standorte';
+  info: {
+    displayName: 'Standort';
+    pluralName: 'standorte';
+    singularName: 'standort';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    Art: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::standort.standort'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    Standort: Schema.Attribute.Text & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1028,8 +1172,13 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::arzt.arzt': ApiArztArzt;
       'api::background.background': ApiBackgroundBackground;
       'api::beruf.beruf': ApiBerufBeruf;
+      'api::betreuen.betreuen': ApiBetreuenBetreuen;
+      'api::event.event': ApiEventEvent;
+      'api::geninfo.geninfo': ApiGeninfoGeninfo;
+      'api::standort.standort': ApiStandortStandort;
       'api::stundenplan.stundenplan': ApiStundenplanStundenplan;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

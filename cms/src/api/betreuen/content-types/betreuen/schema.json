@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "betreuer",
+  "info": {
+    "singularName": "betreuen",
+    "pluralName": "betreuer",
+    "displayName": "betreuer"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Betreuer": {
+      "type": "string",
+      "required": true
+    },
+    "Telefon": {
+      "type": "biginteger",
+      "required": true
+    },
+    "Standort": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

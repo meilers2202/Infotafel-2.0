@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 export default function LocInfo({ isActive }) {
-  const [locInfo, setLocInfo] = useState([]);
+  const [genInfo, setLocInfo] = useState([]);
 
   // Accessibility settings
   const tabIndexValue = isActive ? 0 : -1; // Only focusable when active
@@ -13,9 +13,8 @@ export default function LocInfo({ isActive }) {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:1337/api/gen-infos?`
+          `http://localhost:1337/api/geninfos`
         );
-        console.log(response.data.data);
         setLocInfo(response.data.data);
       } catch (e) {
         console.log("The API request failed");
@@ -31,7 +30,7 @@ export default function LocInfo({ isActive }) {
           isActive ? '' : 'pointer-events-none'
         }`}
       >
-        {locInfo.map((data, index) => (
+        {genInfo.map((data, index) => (
           <div
             key={index}
             className="flex flex-col w-full items-center text-center space-y-2 transform transition-transform hover:scale-125"
