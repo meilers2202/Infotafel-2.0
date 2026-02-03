@@ -41,3 +41,19 @@ Erstelle ein Wireframe für die neue Infotafel. Implementiere die einzelnen Seit
 ### Kommunikation:
 
 Die Kommunikation erfolgt über Teams.
+
+
+C:\Users\m.eilers\Documents\Infotafel-2.0\infotafel>
+	npm install
+	npm install axios
+C:\Users\m.eilers\Documents\Infotafel-2.0\infotafel-cms>
+	npm install
+	npm install axios
+
+
+1. PowerShell
+	npm run start-node
+2. PowerShell
+	npm run start-strapi
+3. PowerShell
+	npm run dev

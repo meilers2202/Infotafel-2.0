@@ -8,7 +8,6 @@ export default function Events({ isActive }) {
     const fetchData = async () => {
       try {
         const response = await axios.get(`http://localhost:1337/api/events?populate=*`);
-        console.log(response.data.data);
         setEvent(response.data.data);
       } catch (e) {
         console.log("The API request failed");
@@ -16,8 +15,6 @@ export default function Events({ isActive }) {
     };
     fetchData();
   }, []);
-
-  console.log(event);
 
   const tabIndexValue = isActive ? 0 : -1;
   const ariaHiddenValue = !isActive;
@@ -52,7 +49,7 @@ export default function Events({ isActive }) {
             aria-hidden={ariaHiddenValue}
           >
             <img
-              src={`http://localhost:1337${eventItem.bild.url}`}
+              src={`placeholder.jpg`}
               className="object-cover w-64 h-64 md:w-[506px] md:h-[506px] rounded-[30px] border-6 border-solid border-white"
             />
           </div>

@@ -14,7 +14,6 @@ export default function LocInfo({ isActive }) {
     const fetchData = async () => {
           try {
       const response = await axios.get(`http://localhost:1337/api/betreuers?`)
-      console.log(response.data.data)
       setLocInfo(response.data.data)
 
       } catch (e) {

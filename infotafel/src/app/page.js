@@ -21,6 +21,7 @@ export default function Home() {
   const [isTransitioning, setIsTransitioning] = useState(false); // To handle the transition state
   const [backgroundImage, setBackgroundImage] = useState("black_bg.jpg")
 
+  
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
   }, [emblaApi]);
@@ -98,9 +99,9 @@ export default function Home() {
     <Foods key="foods" isActive={activeIndex === 1} />,
     <Plan key="plan" isActive={activeIndex === 2} />,
     <Fahrplan key="fahrplan" isActive={activeIndex === 3} />,
-    //<Events key="events" isActive={activeIndex === 4} />,
-    //<LocInfo key="locinfo" isActive={activeIndex === 5} />,
-    //<GenInfo key="geninfo" isActive={activeIndex === 6} />,
+    <Events key="events" isActive={activeIndex === 4} />,
+    <LocInfo key="locinfo" isActive={activeIndex === 5} />,
+    <GenInfo key="geninfo" isActive={activeIndex === 6} />,
   ];
 
   return (

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function LocInfo({ isActive }) {
   const [locInfo, setLocInfo] = useState([]);
@@ -15,7 +16,6 @@ export default function LocInfo({ isActive }) {
         const response = await axios.get(
           `http://localhost:1337/api/gen-infos?`
         );
-        console.log(response.data.data);
         setLocInfo(response.data.data);
       } catch (e) {
         console.log("The API request failed");
@@ -55,17 +55,12 @@ export default function LocInfo({ isActive }) {
           alternativ bei fragen im Haus 01 melden
         </h3>
         <button
-          className="mt-20 px-10 py-4 bg-yellow-500 text-black rounded-full hover:bg-white focus:ring-2 focus:ring-blue-300"
-          tabIndex={tabIndexValue}
+          className="mt-20 px-10 py-4 bg-yellow-500 text-black rounded-full hover:bg-white"
+          tabIndex={isActive ? 0 : -1}
         >
-          <a
-            className="font-bold text-xl"
-            href="/ticket"
-            rel="noopener noreferrer"
-            tabIndex={tabIndexValue}
-          >
+          <Link href="/ticket" className="font-bold text-xl">
             Ticket System Informatik
-          </a>
+          </Link>
         </button>
       </div>
     </div>
