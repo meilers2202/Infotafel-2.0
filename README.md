@@ -14,6 +14,21 @@ Based on ***NEXTJS*** and ***STRAPI***
 
 ## Technische Umsetzung:
 
+### Anforderungen
+
+- Wetter
+	- Azubis sollen das Wetter der ganzen Woche einsehen können
+- StandortNews
+	- Azubis sollen aktuelle News in Chemnitz einsehen können
+- StandortInfos
+- Fahrplan
+	- Azubis sollen den aktuellen Fahrplan der Endhaltestelle am Flemming einsehen können
+- Essensplan
+	- Azubis sollen den Essensplan der Ganzen Woche einsehen können
+- Stundenplan
+	- Azubis sollen den Stundenplan ihres Bereichs einsehen können
+
+
 ### Zeitplan:
 
 Konzeption und Design(Barrierefrei) der neuen Infotafel -> CMS integrieren für Stundenplan, StandortNews und StandortInfos -> Implementierung der Seiten Testen und Fehlerbehebung Deployment und Release

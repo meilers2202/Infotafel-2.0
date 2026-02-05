@@ -28,16 +28,14 @@ const CACHE_FILE = path.join(__dirname, "cache.json");
 const fetchWeatherData = async () => {
   try {
     const response = await axios.get(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,rain,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,rain,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timeformat=unixtime`,
-    )
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth,weather_code,pressure_msl,surface_pressure,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,uv_index_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration&timeformat=unixtime&timezone=Europe%2FBerlin`
+    );
     return response.data;
   } catch (error) {
     console.error("Error fetching weather data:", error);
     throw error;
   }
-}
-
-
+};
 
 const isTimestampExpired = (timestamp, expirationTime) => {
   //Time in Minutes
@@ -49,61 +47,62 @@ app.get("/cache/weather", async (req, res) => {
     let cache = {};
     if (fs.existsSync(CACHE_FILE)) {
       cache = JSON.parse(fs.readFileSync(CACHE_FILE));
-      if (cache.weather && cache.weather.timestamp && !isTimestampExpired(cache.weather.timestamp, 5)) {
+      if (cache.weather && cache.weather.timestamp && !isTimestampExpired(cache.weather.timestamp, 15)) {
         return res.json(cache.weather.data);
-      } else {
-        console.log("cache expired")
       }
     }
-    let data = await fetchWeatherData();
+
+    const data = await fetchWeatherData();
+    
     cache.weather = {
-        timestamp: Date.now(),
-        data
-      }
+      timestamp: Date.now(),
+      data: data
+    };
+
     fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
-
     res.json(data);
-
-  } catch(error) {
-    res.status(500).send("Failed to retrieve weather data");
+  } catch (error) {
+    res.status(500).json({ error: "Failed to retrieve weather data" });
   }
-})
+});
 //#endregion
 
 
 async function parseFoodHTML(html) {
   const $ = cheerio.load(html);
-  const daysOfWeek = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
   const data = [];
-  $("div.speiseplan-lang .kw.slide:first").each((index, element) => {
-    let i = 2;
-    daysOfWeek.forEach((day) => {
-      const meals = { menus: { menuName: [], alergenes: [] }, soup: { soupName: [], alergens: [] } };
-      const date = $(element).find(`.col${i}.row1 span`).text().trim().replace(/\s\s+/g, " ");
 
-      for (let j = 2; j <= 6; j++) {
-        const meal = $(element).find(`.col${i}.row${j} p.gericht`).text().trim().replace(/\s\s+/g, " ");
-        const menuParts = meal.split("/");
+  const currentWeek = $("div.speiseplan-lang .kw.slide").first();
 
-        if (menuParts.length > 1) {
-          if (j === 2) {
-            meals.soup.soupName.push(menuParts[0].trim());
-            meals.soup.alergens.push(menuParts[1].trim());
+  if (currentWeek.length > 0) {
+    for (let i = 2; i <= 6; i++) {
+      const dateText = currentWeek.find(`.col${i}.row1 span`).text().trim();
+      
+      if (dateText) {
+        const dayEntry = {
+          date: dateText,
+          meals: { menus: { menuName: [], alergenes: [] } }
+        };
 
-          } else {
-            meals.menus.menuName.push(menuParts[0].trim());
-            meals.menus.alergenes.push(menuParts[1].trim());
+        for (let j = 2; j <= 6; j++) {
+          const mealRow = currentWeek.find(`.col${i}.row${j}`);
+          const mealName = mealRow.find("p.gericht").text().trim();
+          
+          if (mealName) {
+            const parts = mealName.split("/");
+            dayEntry.meals.menus.menuName.push(parts[0].trim());
+            dayEntry.meals.menus.alergenes.push(parts[1] ? parts[1].trim() : "");
           }
         }
+        if (dayEntry.meals.menus.menuName.length > 0) {
+          data.push(dayEntry);
+        }
       }
-      data.push({ date, meals });
-      i++;
-    });
-  });
+    }
+  }
 
   return data;
 }
-
 
 app.get("/cache/food", async (req, res) => {
   try {
@@ -164,13 +163,6 @@ function parseHTML(html) {
   
   console.log(data);
   
-  
-  
-  
-  
-  
-  
-
   $("div.std3_departure-line").each((index, element) => {
       const lineNr = $(element)
           .find(".std3_dm-mot-info a")

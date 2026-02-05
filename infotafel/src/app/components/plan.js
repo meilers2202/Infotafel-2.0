@@ -1,34 +1,34 @@
+"use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import dotenv from 'dotenv'
-
-dotenv.config()
 
 export default function Plan({ isActive = true }) {
   const [fachrichtung, setFachrichtung] = useState("BVB");
   const [jobList, setJobList] = useState([]);
-  const [planToday, setPlanToday] = useState([]);
-  const [planTomorrow, setPlanTomorrow] = useState([]);
+  const [weeklyPlan, setWeeklyPlan] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  const selectRef = useRef(null); // Reference to the select element
+  const selectRef = useRef(null);
+  const tage = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+  const stunden = Array.from({ length: 10 }, (_, i) => i + 1);
 
-  // Accessibility settings
-  const tabIndexValue = isActive ? 0 : -1; // Only focusable when active
-  const ariaHiddenValue = !isActive; // Hide from screen readers when inactive
+  const tabIndexValue = isActive ? 0 : -1;
+  const ariaHiddenValue = !isActive;
 
+  // Berufsliste laden
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await axios.get(process.env.NEXT_PUBLIC_STRAPI_APP_API_URL + `api/berufe`);
+        const baseUrl = process.env.NEXT_PUBLIC_STRAPI_APP_API_URL || "http://localhost:1337/";
+        const response = await axios.get(`${baseUrl}api/berufe`);
         const jobsData = response.data.data;
 
         if (jobsData && jobsData.length > 0) {
           const jobNames = jobsData
-            .map((job) => job.Name || "Unnamed Job")
+            .map((job) => job.attributes?.Name || job.Name || "Unnamed Job")
             .sort((a, b) => a.localeCompare(b));
           setJobList(jobNames);
-        } else {
-          console.log("No jobs found.");
         }
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -37,184 +37,125 @@ export default function Plan({ isActive = true }) {
     fetchJobs();
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.code === "Numpad8") {
-        // Move up through the select options when Numpad8 is pressed
-        if (selectRef.current) {
-          const currentIndex = selectRef.current.selectedIndex;
-          if (currentIndex > 0) {
-            const newIndex = currentIndex - 1;
-            selectRef.current.selectedIndex = newIndex;
-            setFachrichtung(selectRef.current.value); // Update fachrichtung
-          }
-        }
-      } else if (event.code === "Numpad2") {
-        // Move down through the select options when Numpad2 is pressed
-        if (selectRef.current) {
-          const currentIndex = selectRef.current.selectedIndex;
-          if (currentIndex < selectRef.current.options.length - 1) {
-            const newIndex = currentIndex + 1;
-            selectRef.current.selectedIndex = newIndex;
-            setFachrichtung(selectRef.current.value); // Update fachrichtung
-          }
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [fachrichtung]);
-
+  // Daten für die ganze Woche laden
   useEffect(() => {
     if (!fachrichtung) return;
 
-    const fetchData = async () => {
+    const fetchWeeklyData = async () => {
+      setLoading(true);
+      const newWeeklyPlan = {};
+      const baseUrl = process.env.NEXT_PUBLIC_STRAPI_APP_API_URL || "http://localhost:1337/";
+
+      // Wir holen uns das Datum vom Montag der aktuellen Woche
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0 (So) bis 6 (Sa)
+      const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      const monday = new Date(now.setDate(diffToMonday));
+
       try {
-        const dateToday = new Date().toISOString().split("T")[0];
-        const dateTomorrow = new Date(
-          new Date().getTime() + 24 * 60 * 60 * 1000
-        )
-          .toISOString()
-          .split("T")[0];
+        // Wir iterieren über 5 Tage (Mo-Fr)
+        for (let i = 0; i < 5; i++) {
+          const currentDay = new Date(monday);
+          currentDay.setDate(monday.getDate() + i);
+          const dateStr = currentDay.toISOString().split("T")[0];
 
-        const todayResponse = await axios.get(
-          process.env.NEXT_PUBLIC_STRAPI_APP_API_URL + `api/stundenplaene?populate=*&filters[beruf][Name][$eq]=${fachrichtung}&filters[Datum][$eq]=${dateToday}`
-        );
-        const tomorrowResponse = await axios.get(
-          process.env.NEXT_PUBLIC_STRAPI_APP_API_URL + `api/stundenplaene?populate=*&filters[beruf][Name][$eq]=${fachrichtung}&filters[Datum][$eq]=${dateTomorrow}`
-        );
+          const response = await axios.get(
+            `${baseUrl}api/stundenplaene?populate=*&filters[beruf][Name][$eq]=${fachrichtung}&filters[Datum][$eq]=${dateStr}`
+          );
 
-        const todayData = todayResponse.data.data[0]?.Vertretungsplan || [];
-        const tomorrowData =
-          tomorrowResponse.data.data[0]?.Vertretungsplan || [];
+          // Daten mappen (Stunde als Key für schnellen Zugriff)
+          const dayData = response.data.data[0]?.attributes?.Vertretungsplan || response.data.data[0]?.Vertretungsplan || [];
+          const mappedDay = {};
+          dayData.forEach(item => {
+            mappedDay[item.Stunde] = item.Text;
+          });
 
-        if (todayData.length > 0) {
-          todayData.sort((a, b) => a.Stunde - b.Stunde);
-          setPlanToday(todayData);
-        } else {
-          setPlanToday([]);
+          newWeeklyPlan[tage[i]] = mappedDay;
         }
-
-        if (tomorrowData.length > 0) {
-          tomorrowData.sort((a, b) => a.Stunde - b.Stunde);
-          setPlanTomorrow(tomorrowData);
-        } else {
-          setPlanTomorrow([]);
-        }
+        setWeeklyPlan(newWeeklyPlan);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching weekly data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
+
+    fetchWeeklyData();
   }, [fachrichtung]);
 
   return (
     <div
-      className="flex flex-col items-center p-6 space-y-8 sm:mt-24"
+      className="flex flex-col w-full h-screen overflow-y-auto pt-8 pb-32 custom-scrollbar-v"
       aria-hidden={ariaHiddenValue}
-      role="region"
-      aria-labelledby="plan-title"
-      lang="de"
     >
-      <h1 id="plan-title" className="sr-only">
-        Vertretungsplan
-      </h1>
+      <div className="max-w-[1400px] mx-auto w-full px-4">
+        
+        {/* Dropdown */}
+        <div className="mb-8 flex justify-center">
+          <select
+            ref={selectRef}
+            className="w-full sm:w-1/2 md:w-1/3 p-3 text-lg font-bold text-yellow-500 bg-gray-900 rounded-xl border-2 border-yellow-500/50 focus:border-yellow-500 outline-none transition-all shadow-lg"
+            value={fachrichtung}
+            onChange={(e) => setFachrichtung(e.target.value)}
+            tabIndex={tabIndexValue}
+          >
+            {jobList.map((job, index) => (
+              <option key={index} value={job}>{job}</option>
+            ))}
+          </select>
+        </div>
 
-      {/* Dropdown for job selection */}
-      <div className="w-full max-w-screen-lg">
-        <select
-          ref={selectRef}
-          id="job-select"
-          className="w-full sm:w-1/3 p-2 text-lg font-bold text-yellow-500 bg-black rounded-lg focus:outline-none border border-white"
-          value={fachrichtung}
-          onChange={(e) => setFachrichtung(e.target.value)}
-          tabIndex={tabIndexValue}
-          aria-hidden={ariaHiddenValue}
-        >
-          {jobList.map((job, index) => (
-            <option key={index} value={job}>
-              {job}
-            </option>
-          ))}
-        </select>
+        {/* Wochenplan Tabelle */}
+        <div className="bg-gray-900/80 backdrop-blur-md rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-yellow-600">
+                  <th className="p-4 text-black font-black uppercase text-sm border-r border-black/10 w-20">Std.</th>
+                  {tage.map(tag => (
+                    <th key={tag} className="p-4 text-black font-bold uppercase text-sm border-r border-black/10">
+                      {tag}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {stunden.map((stunde) => (
+                  <tr key={stunde} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td className="p-2 text-center font-bold text-yellow-500 bg-black/20 border-r border-white/10">
+                      {stunde}
+                    </td>
+                    {tage.map(tag => {
+                      const text = weeklyPlan[tag]?.[stunde];
+                      return (
+                        <td key={tag} className="p-1 text-center border-r border-white/10 min-w-[150px]">
+                          {loading ? (
+                            <div className="h-4 w-12 bg-white/10 animate-pulse mx-auto rounded"></div>
+                          ) : (
+                            <span className={`text-sm ${text ? "text-white font-medium" : "text-gray-600"}`}>
+                              {text || "-"}
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p className="text-center text-gray-500 text-xs mt-6 uppercase tracking-[0.2em]">
+          Vertretungsplan • Wochenansicht
+        </p>
       </div>
 
-      {/* Today and Tomorrow Sections */}
-      {["Heute", "Morgen"].map((day, index) => {
-        const plan = index === 0 ? planToday : planTomorrow;
-
-        return (
-          <div className="w-full max-w-screen-lg mt-6 space-y-6" key={day}>
-            <h1 className="text-2xl font-bold mb-4 text-yellow-500">{day}</h1>
-
-            {/* Mobile View */}
-            <div className="block sm:hidden">
-              <div className="w-full max-h-52 overflow-y-auto bg-gray-700 rounded-lg shadow-md p-2">
-                {plan.length > 0 ? (
-                  plan.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col mb-2 p-3 bg-gray-800 rounded-lg shadow-md"
-                    >
-                      <h3 className="font-bold text-yellow-500">Stunde {item.Stunde}</h3>
-                      <p className="text-gray-300">{item.Text || "Keine Vertretung"}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-300">Keine Vertretungen für {day.toLowerCase()}.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Desktop View */}
-            <div className="hidden sm:block relative">
-              <table
-                className="table-auto border-collapse border border-gray-400 w-full text-center"
-                role="table"
-                aria-label={`Stundenplan für ${day.toLowerCase()}`}
-                style={{ tableLayout: "fixed" }}
-              >
-                <thead>
-                  <tr className="bg-yellow-500 text-black" tabIndex={tabIndexValue} role="row">
-                    {Array.from({ length: 10 }).map((_, index) => (
-                      <th
-                        key={index}
-                        className="p-3 border border-gray-300"
-                        role="columnheader"
-                        style={{ whiteSpace: "normal", wordWrap: "break-word" }}
-                      >
-                        Stunde {index + 1}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr role="row">
-                    {Array.from({ length: 10 }).map((_, index) => (
-                      <td
-                        key={index}
-                        className="p-3 border border-gray-300"
-                        tabIndex={tabIndexValue}
-                        role="cell"
-                        style={{
-                          whiteSpace: "normal",
-                          wordWrap: "break-word",
-                        }}
-                      >
-                        {plan.find((item) => item.Stunde === index + 1)?.Text || "-"}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      })}
+      <style jsx>{`
+        .custom-scrollbar-v::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar-v::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        tr:last-child { border-bottom: none; }
+      `}</style>
     </div>
   );
 }

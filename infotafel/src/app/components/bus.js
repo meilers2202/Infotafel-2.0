@@ -2,17 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { ThemeProvider } from "@emotion/react";
-import { createTheme, Typography, Box, SvgIcon, Divider } from "@mui/material";
-import ArrowRight from "@mui/icons-material/ArrowRight";
+import { ThemeProvider, createTheme, Typography, Box, SvgIcon, Divider } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
-import dotenv from 'dotenv'
 
-dotenv.config()
-
+// Theme außerhalb der Komponente definieren, um Re-Renders zu vermeiden
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
@@ -26,11 +22,15 @@ function Fahrplan({ isActive }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(process.env.NEXT_PUBLIC_BACKEND_APP_API_URL + "cache/busplan");
-        setBusplanData(response.data.busData);
-        setLoading(false);
+        // NEXT_PUBLIC_ ist wichtig! dotenv import wurde entfernt.
+        const baseUrl = process.env.NEXT_PUBLIC_BACKEND_APP_API_URL || "http://localhost:1337/api/";
+        const response = await axios.get(`${baseUrl}cache/busplan`);
+        if (response.data && response.data.busData) {
+          setBusplanData(response.data.busData);
+        }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Fahrplan Fetch Error:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -38,186 +38,102 @@ function Fahrplan({ isActive }) {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setInterval(() => {
       if (!busplanData) return;
 
       const currentTime = new Date().getTime();
       const updatedBusplanData = { ...busplanData };
+      let changed = false;
 
-      for (const bus in busplanData) {
-        if (busplanData[bus].departureTimes?.length) {
-          const departureTime = new Date(
-            busplanData[bus].departureTimes[0]
-          ).getTime();
+      for (const bus in updatedBusplanData) {
+        if (updatedBusplanData[bus].departureTimes?.length) {
+          const departureTime = new Date(updatedBusplanData[bus].departureTimes[0]).getTime();
           if (departureTime < currentTime) {
             updatedBusplanData[bus].departureTimes.shift();
+            changed = true;
           }
         }
       }
-
-      setBusplanData(updatedBusplanData);
+      if (changed) setBusplanData(updatedBusplanData);
     }, 60000);
 
-    return () => clearTimeout(timer);
+    return () => clearInterval(timer);
   }, [busplanData]);
-
-  // Accessibility settings
-  const tabIndexValue = isActive ? 0 : -1; // Only focusable when active
-  const ariaHiddenValue = !isActive; // Hidden from screen readers when inactive
-
-  if (loading) {
-    return (
-      <div
-        className="bg-site-background mx-auto px-4 text-white flex-grow w-screen justify-evenly"
-        tabIndex={tabIndexValue}
-        aria-hidden={ariaHiddenValue}
-      >
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
 
   const renderTimeStatus = (stationName, busLine, plannedTime, realTime, index) => {
     const isDelayed = plannedTime !== realTime;
     return (
       <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        mb={2}
         key={index}
-        className="w-full transition-transform transform hover:scale-105 duration-200 px-3 py-2 bg-gray-800 rounded-md shadow-md hover:bg-gray-700 transition duration-200"
-        sx={{
-          width: "100%",
-          maxWidth: "600px", // Increased max width on desktop
-          mx: "auto", // Center the container horizontally
-        }}
+        className="w-full mb-3 px-3 py-3 bg-gray-800/80 rounded-xl border border-white/5 shadow-lg"
+        sx={{ maxWidth: "600px", mx: "auto" }}
       >
         <Box display="flex" flexDirection="column" alignItems="center" mb={1}>
-          {/* Station Name and Bus Line Header */}
           <Typography
-            variant="h6"
-            className="text-white font-semibold"
-            tabIndex={tabIndexValue}
-            sx={{
-              fontSize: { xs: "1rem", sm: "1.2rem", md: "1.4rem" }, // Responsive font size for different screen sizes
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "5px", // Reduced margin to make it tighter
-            }}
+            className="text-white font-bold flex items-center"
+            sx={{ fontSize: { xs: "0.9rem", sm: "1.1rem" } }}
           >
-            <SvgIcon component={DirectionsBusIcon} sx={{ mr: 1, fontSize: "1.4rem" }} />
-            {stationName} - Bus {busLine}
+            <DirectionsBusIcon sx={{ mr: 1, color: "#3498db", fontSize: "1.2rem" }} />
+            {stationName} <span className="text-blue-400 ml-2">Linie {busLine}</span>
           </Typography>
-          <Divider sx={{ width: "80%", my: 1, borderColor: "gray" }} />
+          <Divider sx={{ width: "50%", my: 1, borderColor: "rgba(255,255,255,0.1)" }} />
         </Box>
 
-        <Box
-          display="flex"
-          flexDirection={{ xs: "row", sm: "row" }} // Ensures the times are side by side for mobile
-          justifyContent="center" // Centers both time boxes horizontally
-          alignItems="center"
-          mb={1}
-          sx={{
-            width: "100%", // Ensure the times take up full width
-            gap: { xs: 1, sm: 2 }, // Adjust gap to be smaller on mobile
-            px: { xs: 2, sm: 3 }, // Padding for mobile and small devices
-          }}
-        >
-          {/* Geplante Zeit (Planned Time) */}
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <Typography
-              className="text-gray-400"
-              tabIndex={tabIndexValue}
-              sx={{ fontSize: "0.9rem", textAlign: "center" }}
-            >
-              Geplante Zeit
-            </Typography>
-            <SvgIcon component={AccessTimeIcon} color="primary" sx={{ fontSize: "1.2rem", mb: 1 }} />
-            <Typography
-              className="ml-2"
-              tabIndex={tabIndexValue}
-              sx={{ fontSize: "1.1rem", textAlign: "center" }}
-            >
-              {plannedTime}
-            </Typography>
+        <Box display="flex" justifyContent="space-around" alignItems="center">
+          <Box textAlign="center">
+            <Typography className="text-gray-400 uppercase tracking-tighter" sx={{ fontSize: "0.65rem" }}>Geplant</Typography>
+            <Typography className="text-white font-medium" sx={{ fontSize: "1.1rem" }}>{plannedTime}</Typography>
           </Box>
 
-          {/* Aktuelle Zeit (Real-Time) */}
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <Typography
-              className="text-gray-400"
-              tabIndex={tabIndexValue}
-              sx={{ fontSize: "0.9rem", textAlign: "center" }}
-            >
-              Aktuelle Zeit
-            </Typography>
-            {isDelayed ? (
-              <SvgIcon component={ErrorIcon} color="error" sx={{ fontSize: "1.3rem", mb: 1 }} />
-            ) : (
-              <SvgIcon component={CheckCircleIcon} color="success" sx={{ fontSize: "1.3rem", mb: 1 }} />
-            )}
-            <Typography
-              className={`ml-2 ${isDelayed ? "text-red-500" : "text-green-500"}`}
-              tabIndex={tabIndexValue}
-              sx={{ fontSize: "1.1rem", textAlign: "center" }}
-            >
+          <Box>
+            {isDelayed ? <ErrorIcon color="error" /> : <CheckCircleIcon color="success" />}
+          </Box>
+
+          <Box textAlign="center">
+            <Typography className="text-gray-400 uppercase tracking-tighter" sx={{ fontSize: "0.65rem" }}>Echtzeit</Typography>
+            <Typography className={isDelayed ? "text-red-500 font-bold" : "text-green-500 font-bold"} sx={{ fontSize: "1.1rem" }}>
               {realTime}
             </Typography>
           </Box>
         </Box>
-
-        {isDelayed && (
-          <Typography className="ml-4 text-sm text-red-500">{`Verspätet`}</Typography>
-        )}
       </Box>
     );
   };
 
   return (
-    <div
-      className="mx-auto text-white flex-grow w-full justify-evenly overflow-hidden"
-      aria-hidden={ariaHiddenValue}
+    <div 
+      className="flex flex-col w-full h-screen overflow-y-auto pt-4 pb-32 custom-scrollbar-v"
+      style={{ scrollBehavior: 'smooth' }}
     >
-      <div className="flex flex-grow items-center">
-        <div className="flex w-full justify-center items-center flex-col">
-          <ThemeProvider theme={darkTheme}>
-            <div className="mt-10 flex flex-col items-center w-full font-semibold">
-              <Box
-                className="w-full"
-                sx={{
-                  maxWidth: "1200px", // Maximum width for desktop
-                  width: "90%", // Allow some padding on both sides
-                  px: { xs: 1, sm: 2 }, // Padding for mobile and small devices
-                }}
-              >
-                {busplanData &&
-                  busplanData["31"]?.departureTimes
-                    ?.slice(0, 4)
-                    .map((time, index) => {
-                      const stationName = "Flemmingstraße (Haus 7)"; // Can be customized
-                      const busLine = "31"; // Can be customized
-                      const realTime = busplanData["31"]?.realTimes?.[index] || time;
-                      return renderTimeStatus(stationName, busLine, time, realTime, index);
-                    })}
+      <ThemeProvider theme={darkTheme}>
+        <div className="w-full px-4">
+          {loading ? (
+            <div className="flex justify-center mt-20 text-gray-400 animate-pulse">Busdaten werden geladen...</div>
+          ) : (
+            <div className="w-full flex flex-col items-center">
+              <Box className="w-full" sx={{ maxWidth: "1200px" }}>
+                {busplanData && busplanData["31"]?.departureTimes?.length > 0 ? (
+                  busplanData["31"].departureTimes.slice(0, 8).map((time, index) => {
+                    const realTime = busplanData["31"]?.realTimes?.[index] || time;
+                    return renderTimeStatus("Flemmingstraße", "31", time, realTime, index);
+                  })
+                ) : (
+                  <Typography className="text-center text-gray-500 mt-10">Keine aktuellen Abfahrten</Typography>
+                )}
               </Box>
-            </div>
 
-            {/* Disclaimer Text */}
-            <Box
-              display="flex"
-              justifyContent="center"
-              mt={3}
-              className="text-gray-400 text-xs"
-              tabIndex={tabIndexValue}
-            >
-              <Typography className="p-2 text-center">
-                Für die angegebene Zeit haften wir nicht. Zeiten können variieren.
+              <Typography className="text-gray-500 text-center mt-6 mb-10 text-[10px] max-w-[300px]">
+                Angaben ohne Gewähr. Echtzeitdaten können abweichen.
               </Typography>
-            </Box>
-          </ThemeProvider>
+            </div>
+          )}
         </div>
-      </div>
+      </ThemeProvider>
+
+      <style jsx>{`
+        .custom-scrollbar-v::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar-v::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+      `}</style>
     </div>
   );
 }

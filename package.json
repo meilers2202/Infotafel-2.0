@@ -1,6 +1,9 @@
 {
   "scripts": {
-    "dev-full": "concurrently \"cd /infotafel && next dev\" \"cd /infotafel && npm run start-node\" \"cd /infotafel-cms && npm run start-strapi\"",
+    "dev-full": "concurrently \"npm run dev --prefix infotafel\" \"npm run start-node --prefix infotafel\" \"npm run develop --prefix infotafel-cms\"",
     "install:all": "npm install --prefix infotafel && npm install --prefix infotafel-cms"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }
